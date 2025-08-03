@@ -1,4 +1,4 @@
-module Example exposing (..)
+module Example exposing (suite)
 
 import Expect
 import Test exposing (..)

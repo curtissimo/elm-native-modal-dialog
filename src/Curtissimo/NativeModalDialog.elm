@@ -146,7 +146,7 @@ view options children =
     in
     Html.div []
         [ Html.node "elm-dialog-proxy"
-            (dialogAttrs |> Debug.log "dialog attributes")
+            dialogAttrs
             []
         , Html.node "dialog"
             [ Attrs.id options.id ]
