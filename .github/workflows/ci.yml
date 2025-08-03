@@ -44,7 +44,7 @@ jobs:
           # If you have a `"postinstall": "elm-tooling install"` script in your
           # package.json, this turns it into a no-op. We’ll run it in the next
           # step because of the caching. If elm-tooling.json changes but
-          # package-lock.json does not, the postinstall script needs running
+          # package-lock.json  exposing (Expectation)does not, the postinstall script needs running
           # but this step won’t.
           NO_ELM_TOOLING_INSTALL: 1
         run: npm ci
@@ -53,7 +53,7 @@ jobs:
       - name: Tests
         run: npm test
       - name: Add elm-review, elm and elm-format to path
-        run: npm bin >> $GITHUB_PATH
+        run: echo "$(npm root)/.bin" >> $GITHUB_PATH
       - uses: sparksp/elm-review-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
