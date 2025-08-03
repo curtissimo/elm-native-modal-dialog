@@ -1,0 +1,13 @@
+{
+    "name": "elm-native-modal-dialog-demo",
+    "private": true,
+    "version": "1.0.0",
+    "description": "Curtissimo.NativeModalDialog demo",
+    "scripts": {
+        "dev": "elm-watch hot",
+        "build": "elm-watch make --optimize && ./build.sh"
+    },
+    "devDependencies": {
+        "elm-watch": "^2.0.0-beta.6"
+    }
+}

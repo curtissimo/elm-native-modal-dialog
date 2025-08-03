@@ -1,0 +1,11 @@
+{
+    "serve": "./public/",
+    "targets": {
+        "dev": {
+            "inputs": [
+                "src/Simple.elm"
+            ],
+            "output": "public/main.js"
+        }
+    }
+}

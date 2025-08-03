@@ -1,0 +1,5 @@
+dialog {
+  padding: 0;
+  border: 1px solid var(--bulma-dark);
+  border-radius: 12px;
+}
