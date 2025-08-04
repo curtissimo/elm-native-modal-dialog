@@ -15,6 +15,10 @@ I like the declarative nature of this over the use of ports.
 This package has no ports. It uses a custom Web component to forward and report events for the
 native `<dialog>` element so you don't need to worry about ports.
 
+## Examples
+
+Check out the `Simple` example in `./examples`.
+
 ## Using `Curtissimo.NativeModalDialog`
 
 This is two steps: include the Web component, then use the Elm package.
