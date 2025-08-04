@@ -11,6 +11,7 @@
     "prettier": "^3.2.5"
   },
   "scripts": {
+    "build": "elm make",
     "test": "elm-verify-examples --run-tests && elm-test",
     "postinstall": "elm-tooling install"
   },
