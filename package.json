@@ -1,6 +1,6 @@
 {
   "name": "@curtissimo/elm-native-modal-dialog",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Use the native <dialog> element in Elm instead of rolling your own.",
   "devDependencies": {
     "elm-doc-preview": "^6.0.1",

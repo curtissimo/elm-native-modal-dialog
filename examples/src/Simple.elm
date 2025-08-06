@@ -84,6 +84,7 @@ view model =
         dialogOptions =
             { id = "my-dialog"
             , cancel = Dialog.allowDefault DialogCanceled
+            , classList = []
             , close = DialogClosed
             , showDialog = model.showDialog
             }

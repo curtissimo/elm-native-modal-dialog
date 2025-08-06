@@ -96,6 +96,7 @@ render.
 type alias DialogView msg =
     { id : String
     , cancel : Json.Decode.Decoder (DialogCancelHandler msg)
+    , classList : List ( String, Bool )
     , close : msg
     , showDialog : Bool
     }
@@ -153,6 +154,8 @@ view options children =
             dialogAttrs
             []
         , Html.node "dialog"
-            [ Attrs.id options.id ]
+            [ Attrs.id options.id
+            , Attrs.classList options.classList
+            ]
             children
         ]
