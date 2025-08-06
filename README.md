@@ -10,10 +10,10 @@ pseudo-element.
 
 "What about ports," you ask.
 
-I like the declarative nature of this over the use of ports.
-
 This package has no ports. It uses a custom Web component to forward and report events for the
 native `<dialog>` element so you don't need to worry about ports.
+
+I like the declarative nature of this over the use of ports.
 
 ## Examples
 
@@ -25,8 +25,27 @@ This is two steps: include the Web component, then use the Elm package.
 
 ### Install the Web component
 
+You can do this in one of two ways.
+
+#### **Using your build process**
+
+If you're using a build process (Vite, Rollup, whatever) and you don't mind installing an NPM
+package, you can do that and import the JS file from the `node_modules`.
+
+```sh
+npm install @curtissimo/elm-native-modal-dialog
+```
+
+Then, import it in file to include it in the build.
+
+```js 
+import '@curtissimo/elm-native-modal-dialog/js/elm-dialog-proxy.js';
+```
+
+#### **Just include it in your HTML**
+
 For you application, load the JavaScript file found at `./js/elm-dialog-proxy.js`. It is Vanilla
-JavaScript, so you can just copy the file to your project and either include it from a `<script>`
+JavaScript, so you can just copy the file to your project and include it from a `<script>`
 tag or through a JavaScript build process.
 
 ### Using the Elm package

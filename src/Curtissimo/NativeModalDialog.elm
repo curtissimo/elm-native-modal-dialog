@@ -3,8 +3,10 @@
 
 
 module Curtissimo.NativeModalDialog exposing
-    ( view
-    , DialogCancelHandler, DialogView, allowDefault
+    ( init, showDialog, withCancelHandler, withClassList, withCloseHandler
+    , view
+    , DialogCancelHandler, allowDefault
+    , DialogState
     )
 
 {-| This module provides the Elm bindings to render
@@ -20,41 +22,68 @@ native dialog.
     view model =
         let
             dialogOptions =
-                { id = "my-dialog"
-                , cancel = Dialog.allowDefault DialogCanceled
-                , close = DialogClosed
-                , showDialog = model.showDialog
-                }
+                Dialog.init { id = "my-dialog" }
+                    |> Dialog.showDialog model.showDialog
+                    |> Dialog.withCancelHandler
+                        (Dialog.allowDefault DialogCanceled)
+                    |> Dialog.withClassList
+                        [ ( "dialog", True ) ]
+                    |> Dialog.withCloseHandler DialogClosed
         in
-        { title = "Example modal dialog"
-        , body =
-            [ Html.button [ Html.Events.onClick ShowDialog ]
-                [ Html.text "Show the dialog" ]
-            , Dialog.view dialogOptions
-                [ Html.h1 [] [ Html.text "My Dialog" ]
-                , Html.div []
-                    [ Html.button
-                        [ Html.Events.onClick HideDialog ]
-                        [ Html.text "Close" ]
+        Html.main_ []
+            [ Dialog.view dialogOptions
+                [ Html.form
+                    [ Html.Events.onSubmit HideDialog ]
+                    [ Html.div []
+                        [ Html.header []
+                            [ Html.p [] [ Html.text "My Dialog" ] ]
+                        , Html.section []
+                            [ Html.p []
+                                [ Html.text "This is a <dialog> element!" ]
+                            , Html.p []
+                                [ Html.text "You can hit the "
+                                , Html.kbd [] [ Html.text "Esc" ]
+                                , Html.text " key to cancel it"
+                                ]
+                            ]
+                        , Html.div [}
+                            [ Html.div []
+                                [ Html.button []
+                                    [ Html.text "Submit" ]
+                                , Html.button
+                                    [ Attrs.attribute "formmethod" "dialog"]
+                                    [ Html.text "Close" ]
+                                ]
+                            ]
+                        ]
                     ]
                 ]
             ]
-        }
 
 
-# Rendering
+## Configuring
+
+@docs init, showDialog, withCancelHandler, withClassList, withCloseHandler
+
+
+## Rendering
 
 @docs view
 
 
-# Options
+## Options
 
-@docs DialogCancelHandler, DialogView, allowDefault
+@docs DialogCancelHandler, allowDefault
+
+
+## Opaque types
+
+@docs DialogState
 
 -}
 
 import Html exposing (Html)
-import Html.Attributes as Attrs
+import Html.Attributes as Attrs exposing (classList)
 import Html.Events
 import Json.Decode
 import Json.Encode
@@ -82,32 +111,16 @@ type alias DialogCancelHandler msg =
     }
 
 
-{-| The options needed by the native dialog to properly
-render.
-
-  - `id` is the value that will be used as the <dialog> element's
-    `id` property.
-  - `cancel` provides a handler for the **cancel** event which can
-    prevent the default behavior of the dialog and keep it open.
-  - `close` provides a handler for the **close** event.
-  - `showDialog` will show the modal dialog if `True`.
-
+{-| The state needed by the native dialog to properly render.
 -}
-type alias DialogView msg =
-    { id : String
-    , cancel : Json.Decode.Decoder (DialogCancelHandler msg)
-    , classList : List ( String, Bool )
-    , close : msg
-    , showDialog : Bool
-    }
-
-
-cancelHandlerToCustomHandler : DialogCancelHandler msg -> CustomHandler msg
-cancelHandlerToCustomHandler { message, preventDefault } =
-    { message = message
-    , preventDefault = preventDefault
-    , stopPropagation = False
-    }
+type DialogState msg
+    = DialogState
+        { id : String
+        , cancel : Maybe (Json.Decode.Decoder (DialogCancelHandler msg))
+        , classList : List ( String, Bool )
+        , close : Maybe msg
+        , showDialog : Bool
+        }
 
 
 {-| If you never will prevent the default behavior of the **cancel** event
@@ -121,6 +134,70 @@ allowDefault msg =
         }
 
 
+cancelHandlerToCustomHandler : DialogCancelHandler msg -> CustomHandler msg
+cancelHandlerToCustomHandler { message, preventDefault } =
+    { message = message
+    , preventDefault = preventDefault
+    , stopPropagation = False
+    }
+
+
+{-| Initialize the dialog state with the HTML id to use for the dialog.
+-}
+init : { id : String } -> DialogState msg
+init { id } =
+    DialogState
+        { id = id
+        , cancel = Nothing
+        , classList = []
+        , close = Nothing
+        , showDialog = False
+        }
+
+
+maybeToList : Maybe a -> List a
+maybeToList maybe =
+    case maybe of
+        Nothing ->
+            []
+
+        Just a ->
+            [ a ]
+
+
+{-| Set the flag in the dialog state to show or hide the dialog.
+-}
+showDialog : Bool -> DialogState msg -> DialogState msg
+showDialog show (DialogState state) =
+    DialogState { state | showDialog = show }
+
+
+{-| Set the `Json.Decode.Decoder` to use when the dialog is canceled
+with the `Esc` key. This provides you a way to stop propagation on the
+event.
+
+**Note**: This only fires when the dialog is dismissed using the `Esc` key
+
+-}
+withCancelHandler : Json.Decode.Decoder (DialogCancelHandler msg) -> DialogState msg -> DialogState msg
+withCancelHandler handler (DialogState state) =
+    DialogState { state | cancel = Just handler }
+
+
+{-| Set the class list that will be applied to the <dialog> element.
+-}
+withClassList : List ( String, Bool ) -> DialogState msg -> DialogState msg
+withClassList classList (DialogState state) =
+    DialogState { state | classList = classList }
+
+
+{-| Set the message you want to have fired when the dialog is closed.
+-}
+withCloseHandler : msg -> DialogState msg -> DialogState msg
+withCloseHandler handler (DialogState state) =
+    DialogState { state | close = Just handler }
+
+
 {-| Render the <dialog> element and the proxy handler needed to control the
 dialog.
 
@@ -128,26 +205,34 @@ dialog.
 or as part of your build.
 
 -}
-view : DialogView msg -> List (Html msg) -> Html msg
-view options children =
+view : DialogState msg -> List (Html msg) -> Html msg
+view (DialogState options) children =
     let
         closeDecoder =
-            Json.Decode.succeed
-                { message = options.close
-                , stopPropagation = False
-                , preventDefault = False
-                }
+            options.close
+                |> maybeToList
+                |> List.map
+                    (\x ->
+                        Json.Decode.succeed
+                            { message = x
+                            , stopPropagation = False
+                            , preventDefault = False
+                            }
+                    )
+                |> List.map (Html.Events.custom "close")
 
         cancelDecoder =
             options.cancel
-                |> Json.Decode.map cancelHandlerToCustomHandler
+                |> maybeToList
+                |> List.map (Json.Decode.map cancelHandlerToCustomHandler)
+                |> List.map (Html.Events.custom "cancel")
 
         dialogAttrs =
-            [ Html.Events.custom "close" closeDecoder
-            , Html.Events.custom "cancel" cancelDecoder
-            , Attrs.for options.id
+            [ Attrs.for options.id
             , Attrs.property "open" (Json.Encode.bool options.showDialog)
             ]
+                ++ closeDecoder
+                ++ cancelDecoder
     in
     Html.div []
         [ Html.node "elm-dialog-proxy"

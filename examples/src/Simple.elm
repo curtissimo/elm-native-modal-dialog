@@ -82,12 +82,11 @@ view : Model -> Html Msg
 view model =
     let
         dialogOptions =
-            { id = "my-dialog"
-            , cancel = Dialog.allowDefault DialogCanceled
-            , classList = []
-            , close = DialogClosed
-            , showDialog = model.showDialog
-            }
+            Dialog.init { id = "my-dialog" }
+                |> Dialog.showDialog model.showDialog
+                |> Dialog.withCancelHandler (Dialog.allowDefault DialogCanceled)
+                |> Dialog.withClassList [ ( "dialog", True ) ]
+                |> Dialog.withCloseHandler DialogClosed
     in
     Html.main_ []
         [ Html.div [ Attrs.class "section" ]

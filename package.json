@@ -1,6 +1,6 @@
 {
   "name": "@curtissimo/elm-native-modal-dialog",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "Use the native <dialog> element in Elm instead of rolling your own.",
   "devDependencies": {
     "elm-doc-preview": "^6.0.1",
@@ -12,8 +12,7 @@
   },
   "scripts": {
     "build": "elm make",
-    "test": "elm-verify-examples --run-tests && elm-test",
-    "postinstall": "elm-tooling install"
+    "test": "elm-verify-examples --run-tests && elm-test"
   },
   "author": "Curtis Schlak",
   "license": "BSD-3-Clause"
