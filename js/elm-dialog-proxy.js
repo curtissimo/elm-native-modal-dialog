@@ -12,6 +12,7 @@ class ElmDialogProxy extends HTMLElement {
     this._canceled = false;
     this._handleCancel = this._handleCancel.bind(this);
     this._handleClose = this._handleClose.bind(this);
+    this._subscribeFor = this._subscribeFor.bind(this);
     this._debug = false;
     document.addEventListener("DOMContentLoaded", () => this._subscribeFor());
   }
@@ -109,18 +110,30 @@ class ElmDialogProxy extends HTMLElement {
   }
 
   _handleCancel(e) {
+    if (this._debug) {
+      console.log("handle cancel:", e);
+    }
     this._canceled = true;
     const event = new CustomEvent("cancel", { bubbles: false, cancelable: true });
     this.dispatchEvent(event);
     if (event.defaultPrevented) {
+      if (this._debug) {
+        console.log("handle cancel: default prevented");
+      }
       e.preventDefault();
       this._canceled = false;
     } else {
+      if (this._debug) {
+        console.log("handle cancel: closed");
+      }
       this.open = false;
     }
   }
 
-  _handleClose() {
+  _handleClose(e) {
+    if (this._debug) {
+      console.log("handle close:", e);
+    }
     this.open = false;
     if (!this._canceled) {
       const event = new CustomEvent("close", { bubbles: false, cancelable: false });
@@ -129,9 +142,17 @@ class ElmDialogProxy extends HTMLElement {
     this._canceled = false;
   }
 
-  _subscribeFor() {
-    this._getElement()?.addEventListener("cancel", this._handleCancel);
-    this._getElement()?.addEventListener("close", this._handleClose);
+  _subscribeFor(attempt = 0) {
+    const element = this._getElement();
+
+    if (element !== null) {
+      element.addEventListener("cancel", this._handleCancel);
+      element.addEventListener("close", this._handleClose);
+    } else if (attempt < 5) {
+      setTimeout(() => this._subscribeFor(attempt + 1), 100 * (attempt + 1));
+    } else {
+      console.error("Could not attach to dialog with id", this._for);
+    }
   }
 
   _unsubscribeFor() {
